@@ -191,7 +191,3 @@ The built-in path resolver supports markers in paths:
 - Config and security paths are required. If neither explicit paths nor path environment variables are set, loader construction panics.
 - Symlinks are rejected unless `WithSymlinksAllowed(true)` is used.
 - Saved files are written atomically.
-
-## License
-
-MIT
