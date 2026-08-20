@@ -115,7 +115,7 @@ func extractSequenceSecurityOverlay(v reflect.Value) (any, bool) {
 		overlay, ok := extractSecurityOverlayValue(item)
 		if ok {
 			anyValue = true
-			overlay = attachMergeKey(item, overlay)
+			overlay = attachMergeIdentity(item, overlay)
 			out = append(out, overlay)
 			continue
 		}
@@ -276,7 +276,7 @@ func filterSequenceSecurityOverlayNode(node *yaml.Node, elem reflect.Type) bool 
 	for _, child := range node.Content {
 		filteredChild := *child
 		if filterSecurityOverlayNodeValue(&filteredChild, elem) {
-			attachMergeKeyNode(&filteredChild, child, elem)
+			attachMergeIdentityNodes(&filteredChild, child, elem)
 			out = append(out, &filteredChild)
 		}
 	}
@@ -371,72 +371,56 @@ func typeContainsSecurity(t reflect.Type, seen map[reflect.Type]bool) bool {
 	return false
 }
 
-func attachMergeKey(v reflect.Value, overlay any) any {
+func attachMergeIdentity(v reflect.Value, overlay any) any {
 	if overlay == nil {
 		return nil
 	}
-	for v.Kind() == reflect.Interface || v.Kind() == reflect.Pointer {
+	for v.IsValid() && (v.Kind() == reflect.Interface || v.Kind() == reflect.Pointer) {
 		if v.IsNil() {
 			return overlay
 		}
 		v = v.Elem()
 	}
-	if v.Kind() != reflect.Struct {
+	if !v.IsValid() || v.Kind() != reflect.Struct {
 		return overlay
 	}
-	field, yamlName, ok := mergeKeyField(v.Type())
+	fields, explicit, err := mergeIdentityFields(v.Type())
+	if err != nil {
+		return overlay
+	}
+	m, ok := overlay.(map[string]any)
 	if !ok {
 		return overlay
 	}
-	if value := strings.TrimSpace(v.FieldByIndex(field.Index).String()); value != "" {
-		if m, ok := overlay.(map[string]any); ok {
-			if _, exists := m[yamlName]; !exists {
-				m[yamlName] = value
-			}
+	for _, identity := range fields {
+		value := v.FieldByIndex(identity.field.Index)
+		if !explicit && value.IsZero() {
+			continue
+		}
+		if _, exists := m[identity.name]; !exists {
+			m[identity.name] = value.Interface()
 		}
 	}
 	return overlay
 }
 
-func attachMergeKeyNode(dst *yaml.Node, src *yaml.Node, t reflect.Type) {
-	if dst == nil || src == nil {
+func attachMergeIdentityNodes(dst *yaml.Node, src *yaml.Node, t reflect.Type) {
+	if dst == nil || src == nil || dst.Kind != yaml.MappingNode || src.Kind != yaml.MappingNode {
 		return
 	}
-	for t.Kind() == reflect.Pointer {
-		t = t.Elem()
-	}
-	if t.Kind() != reflect.Struct || dst.Kind != yaml.MappingNode || src.Kind != yaml.MappingNode {
+	fields, _, err := mergeIdentityFields(t)
+	if err != nil {
 		return
 	}
-	_, yamlName, ok := mergeKeyField(t)
-	if !ok {
-		return
-	}
-	if hasYAMLMappingKey(dst, yamlName) {
-		return
-	}
-	key, value, found := findYAMLMappingPair(src, yamlName)
-	if !found {
-		return
-	}
-	dst.Content = append(dst.Content, cloneYAMLNode(key), cloneYAMLNode(value))
-}
-
-func mergeKeyField(t reflect.Type) (reflect.StructField, string, bool) {
-	for i := range t.NumField() {
-		field := t.Field(i)
-		if !field.IsExported() || field.Type.Kind() != reflect.String {
+	for _, identity := range fields {
+		if hasYAMLMappingKey(dst, identity.name) {
 			continue
 		}
-		name, _, skip := yamlFieldName(field)
-		if skip {
-			continue
-		}
-		if name == "name" {
-			return field, name, true
+		key, value, found := findYAMLMappingPair(src, identity.name)
+		if found {
+			dst.Content = append(dst.Content, cloneYAMLNode(key), cloneYAMLNode(value))
 		}
 	}
-	return reflect.StructField{}, "", false
 }
 
 func hasYAMLMappingKey(node *yaml.Node, key string) bool {

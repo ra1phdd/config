@@ -131,6 +131,22 @@ Encryption-related environment variables:
 
 If `CONFIG_SSH_KEY_PATH` is not set, the library looks for a default SSH key in `~/.ssh`.
 
+### Merging secrets into struct slices
+
+An item in `.security.yml` is matched against the main configuration using ordinary scalar fields present in the overlay (`name`, `id`, `type`, and so on). A unique match updates protected branches only, preserving all other fields and slice elements. No match appends a new element. Conflicting or ambiguous selectors return an error.
+
+Identity fields can be declared explicitly; multiple fields form a composite key:
+
+```go
+type AccountConfig struct {
+	Provider string `json:"provider" yaml:"provider" securityMerge:"key"`
+	Region   string `json:"region" yaml:"region" securityMerge:"key"`
+	Token    config.SecureString `json:"token" yaml:"token,omitempty"`
+}
+```
+
+Every explicit composite-key component is required in the corresponding `.security.yml` item. Value and pointer slices are supported. An unmatched item is appended instead of being written to an arbitrary position; a fixed array cannot grow and returns an error.
+
 ## File References For Structured Data
 
 You can move part of the config into a sidecar file with a struct tag:

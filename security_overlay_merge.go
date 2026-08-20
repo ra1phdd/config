@@ -29,7 +29,9 @@ func mergeYAMLNodeIntoValue(node *yaml.Node, dst reflect.Value) error {
 	case reflect.Map:
 		return mergeMapNodeIntoValue(node, dst)
 	case reflect.Slice:
-		return mergeSliceNodeIntoValue(node, dst)
+		return mergeSequenceNodeIntoValue(node, dst)
+	case reflect.Array:
+		return mergeSequenceNodeIntoValue(node, dst)
 	default:
 		return decodeNodeIntoValue(node, dst)
 	}
@@ -87,15 +89,20 @@ func mergeMapNodeIntoValue(node *yaml.Node, dst reflect.Value) error {
 	return nil
 }
 
-func mergeSliceNodeIntoValue(node *yaml.Node, dst reflect.Value) error {
+func mergeSequenceNodeIntoValue(node *yaml.Node, dst reflect.Value) error {
 	if node.Kind != yaml.SequenceNode {
 		return decodeNodeIntoValue(node, dst)
 	}
 	elemType := dst.Type().Elem()
-	if elemType.Kind() == reflect.Struct {
-		if field, yamlName, ok := mergeKeyField(elemType); ok {
-			return mergeNamedSliceNodeIntoValue(node, dst, field, yamlName)
+	if _, ok := indirectStructType(elemType); ok {
+		fields, explicit, err := mergeIdentityFields(elemType)
+		if err != nil {
+			return err
 		}
+		return mergeIdentifiedSequenceNodeIntoValue(node, dst, fields, explicit)
+	}
+	if dst.Kind() == reflect.Array {
+		return decodeNodeIntoValue(node, dst)
 	}
 	result := reflect.MakeSlice(dst.Type(), 0, len(node.Content))
 	for _, child := range node.Content {
@@ -109,37 +116,29 @@ func mergeSliceNodeIntoValue(node *yaml.Node, dst reflect.Value) error {
 	return nil
 }
 
-func mergeNamedSliceNodeIntoValue(node *yaml.Node, dst reflect.Value, field reflect.StructField, yamlName string) error {
-	indexByName := make(map[string]int, dst.Len())
-	for i := range dst.Len() {
-		name := dst.Index(i).FieldByIndex(field.Index).String()
-		if name != "" {
-			indexByName[name] = i
-		}
-	}
-
+func mergeIdentifiedSequenceNodeIntoValue(node *yaml.Node, dst reflect.Value, fields []mergeIdentityField, explicit bool) error {
 	for _, child := range node.Content {
 		if child.Kind != yaml.MappingNode {
-			continue
+			return fmt.Errorf("security overlay sequence item must be a mapping")
 		}
-		_, keyNode, found := findYAMLMappingPair(child, yamlName)
-		if !found {
-			continue
+		idx, identities, err := resolveSequenceCandidate(child, dst, fields, explicit)
+		if err != nil {
+			return err
 		}
-		name := keyNode.Value
-		if idx, exists := indexByName[name]; exists {
-			if err := mergeYAMLNodeIntoValue(child, dst.Index(idx)); err != nil {
+		if idx >= 0 {
+			if err := mergeYAMLNodeIntoValue(withoutIdentityNodes(child, identities), dst.Index(idx)); err != nil {
 				return err
 			}
 			continue
 		}
-
+		if dst.Kind() == reflect.Array {
+			return fmt.Errorf("%w: cannot append unmatched item to %s", ErrInvalidConfig, dst.Type())
+		}
 		elem := reflect.New(dst.Type().Elem()).Elem()
 		if err := mergeYAMLNodeIntoValue(child, elem); err != nil {
 			return err
 		}
 		dst.Set(reflect.Append(dst, elem))
-		indexByName[name] = dst.Len() - 1
 	}
 	return nil
 }
