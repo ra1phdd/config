@@ -82,6 +82,9 @@ func (l *Loader) LoadInto(target any) error {
 	if err := l.loadConfigFile(target); err != nil {
 		return err
 	}
+	if err := bindDirectoryFileMaps(target, l.configPath, l.options.AllowSymlinks, l.options.StrictJSON, l.options.Resolver); err != nil {
+		return err
+	}
 
 	if err := loadYAMLOverlay(target, l.securityPath, l.options.AllowSymlinks); err != nil {
 		return err
@@ -97,6 +100,9 @@ func (l *Loader) LoadInto(target any) error {
 func (l *Loader) Save(cfg any) error {
 	if cfg == nil {
 		return ErrNilConfig
+	}
+	if err := bindUnboundDirectoryFileMaps(cfg, l.configPath, l.options.AllowSymlinks, l.options.StrictJSON, l.options.Resolver); err != nil {
+		return err
 	}
 
 	if err := l.validate(cfg); err != nil {

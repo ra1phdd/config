@@ -149,6 +149,28 @@ Every explicit composite-key component is required in the corresponding `.securi
 
 ## File References For Structured Data
 
+### Directory of typed mini-configs
+
+`FileMap[T]` attaches a directory as part of the main typed config. Each logical key becomes a filename without its extension:
+
+```go
+type UserConfig struct {
+	Name string `json:"name"`
+}
+
+type AppConfig struct {
+	Users config.FileMap[UserConfig] `json:"users" config:"dir=users,format=json"`
+}
+```
+
+```json
+{"users":"file://users/"}
+```
+
+User key `123456` is stored in `users/123456.json`. Loading eagerly decodes the complete directory; one malformed entry fails the full config load. `Get`, `All`, `Keys`, and `Len` read state, while `Add`, `Update`, `Set`, `Delete`, and `Reload` synchronize with disk. CRUD atomically changes the file before memory. `Save` writes known entries without deleting orphan files.
+
+Keys cannot contain extensions, path separators, `..`, absolute, drive, or UNC paths. A `FileMap` is safe for goroutines in one process but provides no cross-process locking. Nested `FileMap` values and mini-configs containing `SecureString` are currently rejected.
+
 You can move part of the config into a sidecar file with a struct tag:
 
 ```go

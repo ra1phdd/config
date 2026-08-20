@@ -54,6 +54,9 @@ func loadConfigWithRefs(path string, data []byte, target any, allowSymlinks bool
 }
 
 func encodeConfigWithRefs(path string, cfg any, allowSymlinks bool, resolver PathResolver) ([]byte, error) {
+	if err := syncDirectoryFileMaps(cfg); err != nil {
+		return nil, err
+	}
 	data, err := encodeConfigFile(path, cfg)
 	if err != nil {
 		return nil, err
