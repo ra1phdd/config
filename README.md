@@ -1,6 +1,6 @@
 # config v2
 
-Typed, deterministic configuration loading for Go services. v2 has no compatibility layer with v1; the v1 implementation and tests live in [`legacy/`](legacy/).
+Typed, deterministic configuration loading for Go services.
 
 ## Features
 
