@@ -1,27 +1,16 @@
-<div align="center">
-<h1>config</h1>
-<p>A Go library for loading application config from JSON, YAML, .env, and environment variables with secure secret overlays, file references, and encrypted credentials.</p>
+# config v2
 
-<p>
-    <img src="https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go&logoColor=white" alt="Go">
-    <img src="https://goreportcard.com/badge/github.com/ra1phdd/config" alt="Go report">
-    <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-</p>
-
-**English** | [Russian](README.ru.md)
-</div>
+Typed, deterministic configuration loading for Go services. v2 has no compatibility layer with v1; the v1 implementation and tests live in [`legacy/`](legacy/).
 
 ## Features
 
-- Loads config into typed Go structs.
-- Supports `.json`, `.yaml`, `.yml`, and `.env` config files.
-- Merges defaults, main config, security overlay, `.env`, and process environment.
-- Keeps `SecureString` values out of the main config file when saving.
-- Stores secrets in a separate YAML security overlay.
-- Supports `file://` references for secret values and sidecar config files.
-- Supports `enc://` encrypted secret values.
-- Rejects symlinks by default for safer file access.
-- Uses atomic writes with `0600` permissions for saved files.
+- Optional JSON, YAML, and process-environment/file sources.
+- JSON sources use the Go 1.27 `encoding/json/v2` implementation.
+- Parsers are independent of the core and can be replaced with a custom `config.Parser`.
+- Fresh typed snapshots with defaults, recursive map merge, scalar/slice replacement.
+- Custom text types, durations, URLs, IPs, maps, slices, pointers, and redacted `Secret[T]`.
+- Optional file reload with debounce and last-good snapshot retention.
+- No mutation of `os.Environ`.
 
 ## Install
 
@@ -29,165 +18,99 @@
 go get github.com/ra1phdd/config
 ```
 
-## Quick Start
+## Quick start
 
 ```go
 package main
 
 import (
-	"fmt"
+	"context"
+	"time"
 
 	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/secret"
+	"github.com/ra1phdd/config/source/env"
+	"github.com/ra1phdd/config/source/json"
 )
 
 type AppConfig struct {
-	Port   int                 `json:"port" yaml:"port" env:"APP_PORT"`
-	Name   string              `json:"name" yaml:"name" env:"APP_NAME"`
-	Token  config.SecureString `json:"token,omitzero" yaml:"token,omitempty" env:"APP_TOKEN"`
-	Labels map[string]string   `json:"labels,omitempty" yaml:"labels,omitempty" config:"file=labels.yaml"`
-}
-
-func defaults() *AppConfig {
-	return &AppConfig{
-		Port: 8080,
-		Name: "app",
-	}
+	Address string        `config:"address,required" env:"APP_ADDRESS"`
+	Timeout time.Duration `config:"timeout" env:"APP_TIMEOUT"`
+	Token   secret.Secret[string] `config:"token" env:"APP_TOKEN"`
 }
 
 func main() {
-	cfg, err := config.LoadGeneric(
-		defaults,
-		config.WithConfigPath("config.yaml"),
-		config.WithSecurityPath(".security.yml"),
-		config.WithDotEnv(".env"),
+	cfg, err := config.Load[AppConfig](context.Background(),
+		config.WithDefaults(func() AppConfig { return AppConfig{Address: ":8080", Timeout: 5 * time.Second} }),
+		config.WithSource(json.File("config")),
+		config.WithSource(env.Process()),
 	)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(cfg.Port, cfg.Name, cfg.Token.String())
-
-	err = config.SaveGeneric(
-		cfg,
-		config.WithConfigPath("config.yaml"),
-		config.WithSecurityPath(".security.yml"),
-	)
-	if err != nil {
-		panic(err)
-	}
+	if err != nil { panic(err) }
+	_ = cfg
 }
 ```
 
-## Merge Order
+Environment names come from the uppercase `config` path by default (`http.address` becomes `HTTP_ADDRESS`). An explicit `env` tag is checked as a fallback alias. Import only the source packages the application uses. Each parser owns its format handling; the core imports none of them. Custom parsers implement `config.Parser` and can be passed to `source.File` or `source.Bytes` from the format-neutral `source` package. File formats are selected by the source constructor, not the path extension.
 
-Values are applied in this order:
-
-1. Defaults passed to `LoadGeneric`
-2. Main config file
-3. Security overlay YAML
-4. Optional `.env` files
-5. Process environment variables
-
-By default, existing process environment variables still win over `.env`. Use `WithDotEnvOverride(true)` if you want `.env` to overwrite already-set environment values before parsing.
-
-## Files
-
-Main config file:
-
-- Supported for loading: `.env`, `.json`, `.yaml`, `.yml`
-- Supported for saving: `.json`, `.yaml`, `.yml`
-
-Security file:
-
-- YAML overlay only
-- Missing file is allowed
-- Contains only security-related values such as `SecureString`
-
-Paths can be passed explicitly or through environment variables:
-
-- `APP_CONFIG`
-- `APP_SECURITY`
-
-## Secure Values
-
-Use `config.SecureString` for secrets.
-
-When saving:
-
-- The main config file gets a placeholder instead of the secret value.
-- The real secret is written to the security overlay.
-- If `CONFIG_KEY_PASSPHRASE` is set and an SSH private key is available, the secret is saved as `enc://...`.
-
-When loading, `SecureString` can resolve:
-
-- Plain text values
-- `file://relative/or/absolute/path`
-- `enc://base64...`
-
-Encryption-related environment variables:
-
-- `CONFIG_KEY_PASSPHRASE`
-- `CONFIG_SSH_KEY_PATH`
-
-If `CONFIG_SSH_KEY_PATH` is not set, the library looks for a default SSH key in `~/.ssh`.
-
-## File References For Structured Data
-
-You can move part of the config into a sidecar file with a struct tag:
+For `validate:"..."` struct tags, use the optional `validator` adapter:
 
 ```go
-type AppConfig struct {
-	Data map[string]string `json:"data,omitempty" yaml:"data,omitempty" config:"file=data.json"`
-}
+engine := validator.New()
+config.Load[AppConfig](ctx,
+	config.WithSource(source),
+	validator.With[AppConfig](engine),
+)
 ```
 
-With this tag:
+The adapter uses `go-playground/validator`, including custom validations and `StructCtx` context support. Required-field and strict-source checks remain part of the core loading policy.
 
-- Loading `data: file://data.json` reads and decodes `data.json` into `Data`.
-- Saving keeps the `file://...` reference in the main config file.
-- The sidecar file is written automatically.
-
-This works for JSON and YAML sidecar files.
-
-## Options
-
-Common options:
-
-- `WithConfigPath(path)`
-- `WithSecurityPath(path)`
-- `WithDotEnv(paths...)`
-- `WithEnvironment(enabled)`
-- `WithDotEnvEnabled(enabled)`
-- `WithDotEnvOverride(enabled)`
-- `WithStrictJSON(enabled)`
-- `WithValidation(enabled)`
-- `WithMissingConfigAllowed(allowed)`
-- `WithEmptyConfigAllowed(allowed)`
-- `WithSymlinksAllowed(allowed)`
-- `WithPathResolver(resolver)`
-
-If your config struct implements:
+For file reloads use the optional `reload` package. It publishes only valid snapshots and keeps the last valid value after an invalid edit:
 
 ```go
-type ConfigValidator interface {
-	Validate() error
+import (
+	"context"
+	"time"
+
+	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/reload"
+)
+
+func watch(ctx context.Context, loader *config.Loader[AppConfig]) error {
+	r, err := reload.New(loader,
+		reload.WithWatchFile("config"),
+		reload.WithDebounce(100*time.Millisecond),
+	)
+	if err != nil {
+		return err
+	}
+	updates, err := r.Start(ctx)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	for update := range updates {
+		if update.Err != nil {
+			continue
+		}
+		_ = update.Config // apply the snapshot in the application layer
+	}
+	return nil
 }
 ```
 
-validation runs automatically on load and save unless disabled.
+Call `r.Reload(ctx)` when a non-file source such as process environment or a remote adapter changes.
 
-## Path Resolution
+`Start` may be called once. `Close` is idempotent and permanently stops the reloader; calls to `Start` or `Reload` after `Close` return `reload.ErrClosed`. Manual `Reload` returns its `Update` directly and does not send a second value through the file-event channel. Applications can provide another change detector with `reload.WithTrigger`.
 
-The built-in path resolver supports markers in paths:
+Snapshots deep-copy exported reference fields. Types with unexported mutable state should implement `config.SnapshotCloner` to provide an independent copy.
 
-- `{HOME}`: current user's home directory
-- `{PWD}`: current working directory
-- `{CWD}`: alias for the current working directory
-- `{TMP}`: system temporary directory
-- `{TEMP}`: alias for the system temporary directory
+## Documentation
 
-## Notes
+- [Getting examples](docs/en/EXAMPLES.md)
+- [Sources](docs/en/SOURCES.md)
+- [Decoding](docs/en/DECODING.md)
+- [Reload](docs/en/RELOAD.md)
+- [Secrets](docs/en/SECRETS.md)
+- [Architecture](docs/en/ARCHITECTURE.md)
 
-- Config and security paths are required. If neither explicit paths nor path environment variables are set, loader construction panics.
-- Symlinks are rejected unless `WithSymlinksAllowed(true)` is used.
-- Saved files are written atomically.
+Russian versions are available in [`docs/ru/`](docs/ru/).
