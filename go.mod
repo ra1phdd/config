@@ -1,4 +1,4 @@
-module github.com/ra1phdd/config
+module github.com/ra1phdd/config/v2
 
 go 1.27
 

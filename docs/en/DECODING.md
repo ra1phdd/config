@@ -41,7 +41,7 @@ config.Load[AppConfig](ctx,
 )
 ```
 
-The engine applies `validate:"..."` tags, supports custom validations and receives the loader context through `StructCtx`. The core keeps its required-field and strict-source policies independent from this optional integration.
+The adapter uses the official [`go-playground/validator`](https://github.com/go-playground/validator), applies `validate:"..."` tags, supports custom validations, and receives the loader context through `StructCtx`. The core keeps its required-field and strict-source policies independent from this optional integration.
 
 Optional value packages can implement `config.ValueSetter`. The core calls that contract without importing the package that owns the value type.
 

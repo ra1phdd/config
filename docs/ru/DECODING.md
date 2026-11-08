@@ -33,7 +33,7 @@ config.Load[AppConfig](ctx,
 )
 ```
 
-Адаптер использует `go-playground/validator`, применяет `validate:"..."`, поддерживает custom validations и передаёт контекст загрузчика в `StructCtx`. Встроенные проверки required-полей и strict-источников остаются независимыми от этой интеграции.
+Адаптер использует официальный [`go-playground/validator`](https://github.com/go-playground/validator), применяет `validate:"..."`, поддерживает custom validations и передаёт контекст загрузчика в `StructCtx`. Встроенные проверки required-полей и strict-источников остаются независимыми от этой интеграции.
 
 Дополнительные value packages могут реализовать `config.ValueSetter`. Core вызывает этот контракт и не импортирует пакет, владеющий конкретным типом.
 
