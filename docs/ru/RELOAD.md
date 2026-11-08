@@ -6,7 +6,7 @@
 
 # Reload
 
-Reload необязателен. Импортируйте `github.com/ra1phdd/config/reload` только для live updates.
+Reload необязателен. Импортируйте `github.com/ra1phdd/config/v2/reload` только для live updates.
 
 ```go
 r, err := reload.New(loader,

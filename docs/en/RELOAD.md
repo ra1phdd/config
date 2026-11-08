@@ -6,7 +6,7 @@
 
 # Reload
 
-Reload is optional. Import `github.com/ra1phdd/config/reload` only when an application needs live updates.
+Reload is optional. Import `github.com/ra1phdd/config/v2/reload` only when an application needs live updates.
 
 ```go
 r, err := reload.New(loader,

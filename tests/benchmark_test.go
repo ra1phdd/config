@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/source/env"
-	configjson "github.com/ra1phdd/config/source/json"
-	configyaml "github.com/ra1phdd/config/source/yaml"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/source/env"
+	configjson "github.com/ra1phdd/config/v2/source/json"
+	configyaml "github.com/ra1phdd/config/v2/source/yaml"
 )
 
 const (

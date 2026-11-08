@@ -6,7 +6,7 @@
 
 # Secrets
 
-`secret.Secret[T]` is an optional redacted value type. It is imported from `github.com/ra1phdd/config/secret` and has no dependency on the core package.
+`secret.Secret[T]` is an optional redacted value type. It is imported from `github.com/ra1phdd/config/v2/secret` and has no dependency on the core package.
 
 ```go
 type Config struct {

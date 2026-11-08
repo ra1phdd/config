@@ -6,7 +6,7 @@
 
 # Секреты
 
-`secret.Secret[T]` — необязательный redacted value type из `github.com/ra1phdd/config/secret`, не зависящий от core.
+`secret.Secret[T]` — необязательный redacted value type из `github.com/ra1phdd/config/v2/secret`, не зависящий от core.
 
 ```go
 type Config struct {

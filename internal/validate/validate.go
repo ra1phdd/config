@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"sort"
 
-	"github.com/ra1phdd/config/internal/path"
-	"github.com/ra1phdd/config/internal/schema"
+	"github.com/ra1phdd/config/v2/internal/path"
+	"github.com/ra1phdd/config/v2/internal/schema"
 )
 
 // Issue describes one validation failure without a public source name.

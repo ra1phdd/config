@@ -14,10 +14,10 @@ import (
 	"strings"
 	"time"
 
-	configmerge "github.com/ra1phdd/config/internal/merge"
-	configpath "github.com/ra1phdd/config/internal/path"
-	"github.com/ra1phdd/config/internal/schema"
-	configvalidate "github.com/ra1phdd/config/internal/validate"
+	configmerge "github.com/ra1phdd/config/v2/internal/merge"
+	configpath "github.com/ra1phdd/config/v2/internal/path"
+	"github.com/ra1phdd/config/v2/internal/schema"
+	configvalidate "github.com/ra1phdd/config/v2/internal/validate"
 )
 
 // Option configures a typed Loader.

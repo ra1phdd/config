@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/v2"
 )
 
 func TestBytesParserLoadsWithoutOtherFormatPackages(t *testing.T) {

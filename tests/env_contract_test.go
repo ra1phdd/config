@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/source/env"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/source/env"
 )
 
 func TestEnvironmentFileContract(t *testing.T) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ra1phdd/config"
-	genericSource "github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	genericSource "github.com/ra1phdd/config/v2/source"
 )
 
 type parser struct{}

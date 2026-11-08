@@ -19,7 +19,7 @@
 ## Установка
 
 ```bash
-go get github.com/ra1phdd/config
+go get github.com/ra1phdd/config/v2
 ```
 
 ## Быстрый старт
@@ -31,10 +31,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/secret"
-	"github.com/ra1phdd/config/source/env"
-	"github.com/ra1phdd/config/source/json"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/secret"
+	"github.com/ra1phdd/config/v2/source/env"
+	"github.com/ra1phdd/config/v2/source/json"
 )
 
 type AppConfig struct {

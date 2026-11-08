@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ra1phdd/config"
-	genericSource "github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	genericSource "github.com/ra1phdd/config/v2/source"
 )
 
 type immediateTrigger struct{}

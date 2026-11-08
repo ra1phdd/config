@@ -6,14 +6,14 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/ra1phdd/config"
-	fieldenv "github.com/ra1phdd/config/internal/envmap"
-	"github.com/ra1phdd/config/reload"
-	"github.com/ra1phdd/config/secret"
-	genericSource "github.com/ra1phdd/config/source"
-	"github.com/ra1phdd/config/source/env"
-	"github.com/ra1phdd/config/source/json"
-	"github.com/ra1phdd/config/source/yaml"
+	"github.com/ra1phdd/config/v2"
+	fieldenv "github.com/ra1phdd/config/v2/internal/envmap"
+	"github.com/ra1phdd/config/v2/reload"
+	"github.com/ra1phdd/config/v2/secret"
+	genericSource "github.com/ra1phdd/config/v2/source"
+	"github.com/ra1phdd/config/v2/source/env"
+	"github.com/ra1phdd/config/v2/source/json"
+	"github.com/ra1phdd/config/v2/source/yaml"
 )
 
 type (

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	playground "github.com/go-playground/validator/v10"
-	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/v2"
 )
 
 // Validate is the go-playground validator engine used by this adapter.

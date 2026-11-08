@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ra1phdd/config/internal/schema"
+	"github.com/ra1phdd/config/v2/internal/schema"
 )
 
 type fieldDescriptor struct {

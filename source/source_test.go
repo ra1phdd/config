@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/v2"
 )
 
 type textParser struct{}

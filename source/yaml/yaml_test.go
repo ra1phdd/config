@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/v2"
 	yamlv3 "gopkg.in/yaml.v3"
 )
 

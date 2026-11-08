@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ra1phdd/config"
-	fieldenv "github.com/ra1phdd/config/internal/envmap"
-	genericSource "github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	fieldenv "github.com/ra1phdd/config/v2/internal/envmap"
+	genericSource "github.com/ra1phdd/config/v2/source"
 )
 
 // Process reads process environment variables using explicit env tags.

@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/ra1phdd/config/secret"
+	"github.com/ra1phdd/config/v2/secret"
 )
 
 func TestSecretPackageContract(t *testing.T) {

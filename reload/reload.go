@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ra1phdd/config"
+	"github.com/ra1phdd/config/v2"
 )
 
 // ErrNotStarted indicates that Reload was called before Start.

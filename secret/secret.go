@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ra1phdd/config/internal/clone"
+	"github.com/ra1phdd/config/v2/internal/clone"
 )
 
 // Secret stores a value without exposing it through formatting or JSON output.

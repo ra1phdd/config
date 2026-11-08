@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	playground "github.com/go-playground/validator/v10"
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/source"
 )
 
 func TestForValidatesConfigUsingStructTags(t *testing.T) {

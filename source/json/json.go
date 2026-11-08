@@ -12,9 +12,9 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/internal/schema"
-	genericSource "github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/internal/schema"
+	genericSource "github.com/ra1phdd/config/v2/source"
 )
 
 // Parser implements config.Parser for a single JSON document.

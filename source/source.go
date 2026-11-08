@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"reflect"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/internal/clone"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/internal/clone"
 )
 
 type valueSource struct {

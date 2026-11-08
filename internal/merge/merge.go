@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/ra1phdd/config/internal/clone"
-	"github.com/ra1phdd/config/internal/path"
-	"github.com/ra1phdd/config/internal/schema"
+	"github.com/ra1phdd/config/v2/internal/clone"
+	"github.com/ra1phdd/config/v2/internal/path"
+	"github.com/ra1phdd/config/v2/internal/schema"
 )
 
 type visit struct {

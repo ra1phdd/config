@@ -8,9 +8,9 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/ra1phdd/config"
-	"github.com/ra1phdd/config/internal/schema"
-	genericSource "github.com/ra1phdd/config/source"
+	"github.com/ra1phdd/config/v2"
+	"github.com/ra1phdd/config/v2/internal/schema"
+	genericSource "github.com/ra1phdd/config/v2/source"
 	yamlv3 "gopkg.in/yaml.v3"
 )
 
